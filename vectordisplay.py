@@ -122,15 +122,21 @@ def displaygui(surf, inputs: list[VectorField], colors):
     text_surf = med_text.render("Vectors:", 1, (255,255,255))
     surf.blit(text_surf, (10, HEIGHT + 10))
     if len(inputs) == 0:
-        rect = pygame.Rect(15 + text_surf.get_width() + 40, HEIGHT + 50 + (small_text.get_height() + 10) - 2, text_surf.get_width() + 80, small_text.get_height() + 8)
+        rect = pygame.Rect(text_surf.get_width() + 40, HEIGHT + 25 + (small_text.get_height() + 10) - 7, text_surf.get_width() + 80, small_text.get_height() + 8)
         text = '<5, 5>'
         inputs.append(VectorField(rect, text))
     vect_array = []
     for i, field in enumerate(inputs):
-        vect = Vector(int(field.text[1]), int(field.text[4]))
-        vect_array.append(vect)
+        if len(field.text) >= 6:
+            vect = Vector(int(field.text[1]), int(field.text[4]))
+        else:
+            vect = Vector(0, 0)
         text_surface = small_text.render(f'Vector({vect.x}, {vect.y})', True, (255,255,255))
         surf.blit(text_surface, (10, HEIGHT + 50 + i * (small_text.get_height() + 10)))
+        text_surf2 = small_text.render(field.text, True, (255,255,255))
+        pygame.draw.rect(surf, (255,255,255), field.rect, 2, 2)
+        surf.blit(text_surf2, (30 + text_surface.get_width() + 10, HEIGHT + 52 + i * (small_text.get_height() + 10)))
+        vect_array.append(vect)
 
     for i, item in enumerate(vect_array):
         display_vector(surf, colors[i], item, (0,0))
@@ -176,6 +182,7 @@ def main():
     inputs = []
 
     active = False
+    curBox = None
 
     while running:
         screen.fill((0,0,0))
@@ -185,11 +192,21 @@ def main():
             if e.type == pygame.QUIT:
                 running = False
             elif e.type == pygame.MOUSEBUTTONDOWN:
-                for box in inputs.values():
-                    if box.collidepoint(e.pos):
+                for box in inputs:
+                    if box.rect.collidepoint(e.pos):
                         print("BOX!")
+                        curBox = box
+                        curBox.text = '<'
+                        active = True
             elif e.type == pygame.KEYDOWN:
                 if active:
+                    if e.unicode.isdigit():
+                        if len(curBox.text) < 2:
+                            curBox.text += f'{e.unicode}, '
+                            first = False
+                        else:
+                            curBox.text += f'{e.unicode}>'
+                            active = False
                     if e.key == pygame.K_RETURN:
                         print(f"Text changed")
 
