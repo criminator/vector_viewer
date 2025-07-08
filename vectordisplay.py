@@ -116,7 +116,8 @@ def display_vector(surf, color: tuple[int], vect: Vector, point: tuple[int]) -> 
     # Draw the arrowhead
     pygame.draw.polygon(surf, color, [end, arrow_point1, arrow_point2])
 
-def displaygui(surf, inputs: list[VectorField], colors):
+def displaygui(surf, inputs: list[VectorField], colors, add_vect_rect: pygame.Rect):
+    large_text = pygame.font.SysFont("Arial", 36)
     med_text = pygame.font.SysFont("Arial", 22)
     small_text = pygame.font.SysFont("Arial", 18)
     text_surf = med_text.render("Vectors:", 1, (255,255,255))
@@ -140,6 +141,10 @@ def displaygui(surf, inputs: list[VectorField], colors):
 
     for i, item in enumerate(vect_array):
         display_vector(surf, colors[i], item, (0,0))
+
+    plus_mark = large_text.render("+", True, (255,255,255))
+    surf.blit(plus_mark, (add_vect_rect.x + 6.5, add_vect_rect.y - 2.5))
+    pygame.draw.rect(surf, (255,255,255), add_vect_rect, 2, 2)
     '''
     for i, vect in enumerate(arr):
         text_surface = small_text.render(f'{i+1}. {str(vect)}', True, (255,255,255))
@@ -184,6 +189,7 @@ def main():
     active = False
     curBox = None
 
+    add_vect_rect = pygame.Rect(WIDTH - 45, HEIGHT + 140, 30, 40)
     while running:
         screen.fill((0,0,0))
 
@@ -198,6 +204,13 @@ def main():
                         curBox = box
                         curBox.text = '<'
                         active = True
+                if add_vect_rect.collidepoint(e.pos):
+                    rect = pygame.Rect(100, HEIGHT + 43*(len(inputs)+1), 100 + 8, 20)
+                    text = '<'
+                    newBox = VectorField(rect, text)
+                    inputs.append(newBox)
+                    curBox = newBox
+                    active = True
             elif e.type == pygame.KEYDOWN:
                 if active:
                     if e.unicode.isdigit():
@@ -224,7 +237,7 @@ def main():
         '''
         
 
-        displaygui(screen, inputs, vect_colors)
+        displaygui(screen, inputs, vect_colors, add_vect_rect)
 
         pygame.display.flip()
             
